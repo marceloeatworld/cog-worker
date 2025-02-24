@@ -2,7 +2,7 @@ ARG COG_REPO
 ARG COG_MODEL
 ARG COG_VERSION
 
-FROM r8.im/${COG_REPO}/${COG_MODEL}@sha256:${COG_VERSION}
+FROM marcelo66/photobooth:last
 
 # Install necessary packages and Python 3.10
 RUN apt-get update && apt-get upgrade -y && \
@@ -20,5 +20,7 @@ RUN python3 -m venv /opt/venv
 RUN /opt/venv/bin/pip install runpod
 
 ADD src/handler.py /rp_handler.py
+
+ENV TINI_SUBREAPER=true
 
 CMD ["/opt/venv/bin/python3", "-u", "/rp_handler.py"]

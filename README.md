@@ -15,5 +15,7 @@ cd cog-worker/
 
 docker build --tag user/repo:tag --build-arg COG_REPO=user --build-arg COG_MODEL=model_name --build-arg COG_VERSION=model_version .
 
+docker build --tag marcelo66/photobooth:upscaleimage --build-arg COG_REPO=marcelo66 --build-arg COG_MODEL=photobooth .
+
 docker push user/repo:tag
 ```
