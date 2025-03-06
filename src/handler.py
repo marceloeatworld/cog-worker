@@ -30,12 +30,13 @@ subprocess.Popen(["python", "-m", "cog.server.http"])
 # ---------------------------------------------------------------------------- #
 #                              Automatic Functions                             #
 # ---------------------------------------------------------------------------- #
-def wait_for_service(url, max_retries=100):
+def wait_for_service(url, max_retries=None):
     '''
-    Check if the service is ready to receive requests with a maximum retry limit.
+    Check if the service is ready to receive requests.
+    If max_retries is None, wait indefinitely.
     '''
     retries = 0
-    while retries < max_retries:
+    while max_retries is None or retries < max_retries:
         try:
             health = requests.get(url, timeout=120)
             status = health.json()["status"]
@@ -46,7 +47,10 @@ def wait_for_service(url, max_retries=100):
                 return True
 
         except requests.exceptions.RequestException:
-            log.info(f"Service not ready yet. Retrying... ({retries+1}/{max_retries})")
+            if max_retries:
+                log.info(f"Service not ready yet. Retrying... ({retries+1}/{max_retries})")
+            else:
+                log.info("Service not ready yet. Retrying...")
         except Exception as err:
             log.warn(f"Health check error: {str(err)}")
 
@@ -138,11 +142,9 @@ def handler(event):
 if __name__ == "__main__":
     log.info("Starting COG API service")
     
-    # Wait for service to be ready
-    service_ready = wait_for_service(url=f'{LOCAL_URL}/health-check')
+    # Wait for service to be ready (without a retry limit)
+    log.info("Waiting for COG service to be ready...")
+    wait_for_service(url=f'{LOCAL_URL}/health-check')
     
-    if service_ready:
-        log.info("COG API Service is ready. Starting RunPod serverless handler...")
-        runpod.serverless.start({"handler": handler})
-    else:
-        log.error("COG API Service failed to start. Exiting.")
+    log.info("COG API Service is ready. Starting RunPod serverless handler...")
+    runpod.serverless.start({"handler": handler})
