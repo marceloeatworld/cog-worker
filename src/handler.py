@@ -86,12 +86,12 @@ def run_inference(inference_request):
                 if "error" in error_json:
                     error_message = error_json["error"]
                     
-                    # Vérifier le message exact de l'erreur de détection de visage
-                    if "Face detector could not find a face in the `image`" in error_message:
+                    # Check for face detection error with more robust pattern matching
+                    if "Face detector could not find a face" in error_message:
                         log.info("Face detection error, providing specific error message")
                         return {"output": {"error": "NO_FACE_DETECTED: Please use an image with a clearly visible face."}}
-            except:
-                pass
+            except Exception as json_err:
+                log.warn(f"Could not parse error response as JSON: {str(json_err)}")
                 
             # Return a properly structured error response
             return {"output": {"error": error_message}}
